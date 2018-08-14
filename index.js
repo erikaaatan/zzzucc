@@ -1,14 +1,14 @@
 'use strict';
 const BootBot = require('bootbot');
 const config = require('config');
+var schedule = require('node-schedule');
 var fetch = require("node-fetch");
 
-function sendReminder(){
-
-}
-
-function createReminder(){
-
+function createReminder(year, month, day, hour, minute, second){
+  var date = new Date(year, month, day, hour, minute, second);
+  var j = schedule.scheduleJob(date, function(){
+    chat.say("Hello again! It's time to go to sleep");
+  });
 }
 
 function sendGoodBoyes(userID){
@@ -17,7 +17,7 @@ function sendGoodBoyes(userID){
     .then(res => res.json())
     .then(json => {
       bot.say(
-        userID, 
+        userID,
       {
         attachment: 'image',
         url: json.data.image_url
@@ -37,6 +37,37 @@ var tips = [
   "Try using another pillow tonight!"
 ];
 
+const question = {
+	text: `What is your target sleep time?`,
+	quickReplies: ['9 PM', '10 PM', '11 PM', '12 AM']
+};
+
+const answer = (payload, convo) => {
+	const text = payload.message.text;
+  var hour = parseInt(text.substring(0, 1));
+  createReminder(Date.getYear(), Date.getMonth(), Date.getDate(), hour, 0, 0);
+	convo.say(`Reminder created for ${text}`);
+};
+
+const callbacks = [
+	{
+		event: 'quick_reply',
+		callback: () => { /* User replied using a quick reply */ }
+	},
+	{
+		event: 'attachment',
+		callback: () => { /* User replied with an attachment */ }
+	},
+	{
+		pattern: ['black', 'white'],
+		callback: () => { /* User said "black" or "white" */ }
+	}
+];
+
+const options = {
+	typing: true // Send a typing indicator before asking the question
+};
+
 const bot = new BootBot({
     accessToken: config.get('access_token'),
     verifyToken: config.get('verify_token'),
@@ -54,6 +85,12 @@ bot.hear(['hello', 'hi', 'hey', 'oi'], (payload, chat) => {
 
 bot.hear(['tip'], (payload, chat) => {
     chat.say(tips[Math.floor(Math.random()*tips.length)]);
+});
+
+bot.hear(['reminder'], (payload, chat) => {
+  chat.conversation((convo) => {
+    convo.ask(question, answer, callbacks, options);
+  });
 });
 
 const GIPHY_URL = `http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=`;

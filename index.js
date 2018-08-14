@@ -83,27 +83,21 @@ bot.hear(['hello', 'hi', 'hey', 'oi'], (payload, chat) => {
     chat.say("Hello again!");
 });
 
-bot.hear(['tip'], (payload, chat) => {
-    chat.say(tips[Math.floor(Math.random()*tips.length)]);
-});
-
-bot.hear(['reminder'], (payload, chat) => {
-  chat.conversation((convo) => {
-    convo.ask(question, answer);
-  });
-});
-
 const GIPHY_URL = `http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=`;
 
-
-bot.hear(['cute', 'dog', '(pic)?tures', 'doggo'], (payload, chat) => {
-
-});
 
 bot.on('message', (payload, chat) => {
     const text = payload.message.text;
     if (text.includes("dog") || text.includes("puppy") || text.includes("puppies") || text.includes("pic") || text.includes("pictures")|| text.includes("pics") || text.includes("boys") || text.includes("good")) {
         sendGoodBoyes(payload.sender.id);
+    }
+    if (text.includes("reminder")) {
+      chat.conversation((convo) => {
+        convo.ask(question, answer);
+      });
+    }
+    if (text.includes("tip")) {
+      chat.say(tips[Math.floor(Math.random()*tips.length)]);
     }
 });
 

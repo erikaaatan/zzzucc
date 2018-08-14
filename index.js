@@ -1,10 +1,11 @@
 'use strict';
 const BootBot = require('bootbot');
+const config = require('config');
 
 const bot = new BootBot({
-    accessToken: 'EAAY2tIZCSiNUBAFwn1A9O7hbkQEEZBG9fJ8ILDce78TZBrMVvrxLbFY5kCNZCUWZCAZBZBLP5nrbubZBf63eOCefwZBvHY2rnOlDMSWGfCY429OQuqzDc8itZBrwdJzP0vCITSG29L7gZBKaYYFnZBv4cyEKfe8DCzFY7rnHzwrZANL3bZA9ioBo7rXx3ZA',
-    verifyToken: 'Hello_Again',
-    appSecret: '0eca666d2ecffc53d6a1ff1b53579471',
+    accessToken: config.get('access_token'),
+    verifyToken: config.get('verify_token'),
+    appSecret: config.get('app_secret'),
 });
 
 bot.on('message', (payload, chat) => {

@@ -77,6 +77,7 @@ const question = {
 	quickReplies: ['9 PM', '10 PM', '11 PM', '12 AM']
 };
 
+/*
 const answer = (payload, convo) => {
 	const text = payload.message.text;
   var hour = parseInt(text.replace(" PM", ""));
@@ -96,17 +97,23 @@ const answer = (payload, convo) => {
     });
   } else if (hour == 12) {
     chat.conversation((convo) => {
-      convo.ask(questionWakeup10, answerWakeup);
+      convo.ask(questionWakeup12, answerWakeup);
     });
   }
 };
-
+*/
 
 const bot = new BootBot({
     accessToken: config.get('access_token'),
     verifyToken: config.get('verify_token'),
     appSecret: config.get('app_secret'),
 });
+
+bot.setGreetingText("ZZZucc: A Facebook Messenger bot that helps you catch more ZZZs (sends personal reminders for going to sleep on time)");
+bot.setGetStartedButton("Welcome! Features include:\
+ \nReminders to go to sleep\nReminders to wake you up at an optimal time, according to your sleep cycle\
+ \nTips and tricks for getting a better night's sleep \
+ \nFree dog gifs :)");
 
 bot.on('message', (payload, chat) => {
 	const text = payload.message.text;
@@ -127,7 +134,29 @@ bot.on('message', (payload, chat) => {
     }
     if (text.includes("reminder")) {
       chat.conversation((convo) => {
-        convo.ask(question, answer);
+        convo.ask(question, (payload, convo) => {
+        	const text = payload.message.text;
+          var hour = parseInt(text.replace(" PM", ""));
+          createReminder(payload.sender.id, hour);
+        	convo.say(`Reminder created for ${text}`);
+          if (hour == 9) {
+            chat.conversation((convo) => {
+              convo.ask(questionWakeup9, answerWakeup);
+            });
+          } else if (hour == 10) {
+            chat.conversation((convo) => {
+              convo.ask(questionWakeup10, answerWakeup);
+            });
+          } else if (hour == 11) {
+            chat.conversation((convo) => {
+              convo.ask(questionWakeup11, answerWakeup);
+            });
+          } else if (hour == 12) {
+            chat.conversation((convo) => {
+              convo.ask(questionWakeup12, answerWakeup);
+            });
+          }
+        });
       });
     }
     if (text.includes("tip")) {

@@ -14,6 +14,7 @@ function getTimeZone(userID){
     .then(json => {
         
 });
+};
 
 function createReminder(year, month, day, hour, minute, second){
   var date = new Date(year, month, day, hour, minute, second);
@@ -53,12 +54,7 @@ const question = {
 	quickReplies: ['9 PM', '10 PM', '11 PM', '12 AM']
 };
 
-const answer = (payload, convo) => {
-	const text = payload.message.text;
-  var hour = parseInt(text.substring(0, 1));
-  createReminder(Date.getYear(), Date.getMonth(), Date.getDate(), hour, 0, 0);
-	convo.say(`Reminder created for ${text}`);
-};
+
 
 const callbacks = [
 	{
@@ -100,7 +96,13 @@ bot.hear(['tip'], (payload, chat) => {
 
 bot.hear(['reminder'], (payload, chat) => {
   chat.conversation((convo) => {
-    convo.ask(question, answer, callbacks, options);
+    convo.ask(question,  (payload, chat) => {
+
+        const text = payload.message.text;
+        var hour = parseInt(text.replace(" PM", ""));
+        chat.say(`Reminder created for ${text}`);
+        createReminder(Date.getfullyear(), Date.getMonth(), Date.getDate(), hour, 0, 0);
+      });
   });
 });
 

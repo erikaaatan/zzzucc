@@ -11,6 +11,13 @@ function createReminder(userID, hour){
     console.log("Job created!!");
 }
 
+function createWakeupReminder(userID, hour, minute){
+    var j = schedule.scheduleJob(''+ minute + hour +' * * *', function(fireDate){
+        bot.say(userID, "Wake up");
+    });
+    console.log("Job created!!");
+}
+
 function sendGoodBoyes(userID){
     bot.say(userID, 'Searching for the perfect gif...');
   fetch(GIPHY_URL + "Puppies")
@@ -37,6 +44,34 @@ var tips = [
   "Try using another pillow tonight!"
 ];
 
+const questionWakeup = {
+  text: `When would you like to receive wake-up reminders?`,
+	quickReplies: ['6:15 AM', '7:45 AM', '9:15 AM']
+};
+
+const questionWakeup10 = {
+  text: `When would you like to receive wake-up reminders?`,
+	quickReplies: ['5:45 AM', '7:15 AM', '8:45 AM']
+};
+
+const questionWakeup11 = {
+  text: `When would you like to receive wake-up reminders?`,
+	quickReplies: ['6:45 AM', '8:15 AM', '9:45 AM']
+};
+
+const questionWakeup12 = {
+  text: `When would you like to receive wake-up reminders?`,
+	quickReplies: ['7:45 AM', '9:15 AM', '10:45 AM']
+};
+
+const answerWakeup = (payload, convo) => {
+	const text = payload.message.text;
+  var hour = parseInt(text.substring(0, text.indexOf(":")));
+  var minute = parseInt(text.substring(text.indexOf(":") + 1, text.indexOf(":") + 3));
+  createWakeupReminder(payload.sender.id, hour, minute);
+	convo.say(`Reminder created for ${text}`);
+};
+
 const question = {
 	text: `What is your target sleep time?`,
 	quickReplies: ['9 PM', '10 PM', '11 PM', '12 AM']
@@ -47,26 +82,25 @@ const answer = (payload, convo) => {
   var hour = parseInt(text.replace(" PM", ""));
   createReminder(payload.sender.id, hour);
 	convo.say(`Reminder created for ${text}`);
+  if (hour == 9) {
+    chat.conversation((convo) => {
+      convo.ask(questionWakeup9, answerWakeup);
+    });
+  } else if (hour == 10) {
+    chat.conversation((convo) => {
+      convo.ask(questionWakeup10, answerWakeup);
+    });
+  } else if (hour == 11) {
+    chat.conversation((convo) => {
+      convo.ask(questionWakeup11, answerWakeup);
+    });
+  } else if (hour == 12) {
+    chat.conversation((convo) => {
+      convo.ask(questionWakeup10, answerWakeup);
+    });
+  }
 };
 
-const callbacks = [
-	{
-		event: 'quick_reply',
-		callback: () => { /* User replied using a quick reply */ }
-	},
-	{
-		event: 'attachment',
-		callback: () => { /* User replied with an attachment */ }
-	},
-	{
-		pattern: ['black', 'white'],
-		callback: () => { /* User said "black" or "white" */ }
-	}
-];
-
-const options = {
-	typing: true // Send a typing indicator before asking the question
-};
 
 const bot = new BootBot({
     accessToken: config.get('access_token'),

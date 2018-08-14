@@ -1,13 +1,14 @@
 'use strict';
 const BootBot = require('bootbot');
 const config = require('config');
-var schedule = require('node-schedule');
+var schedule = require('node-schedule-tz');
 var fetch = require("node-fetch");
 
-function createReminder(hour){
-  var j = schedule.scheduleJob(`0 ${hour} * * *`, function(){
-    chat.say("Hello again! It's time to go to sleep");
-  });
+function createReminder(userID, hour){
+    var j = schedule.scheduleJob('0 ' + hour +' * * *', function(fireDate){
+        bot.say(userID, "Go to sleep");
+    });
+    console.log("Job created!!");
 }
 
 function sendGoodBoyes(userID){
@@ -44,7 +45,7 @@ const question = {
 const answer = (payload, convo) => {
 	const text = payload.message.text;
   var hour = parseInt(text.replace(" PM", ""));
-  createReminder(hour);
+  createReminder(payload.sender.id, hour);
 	convo.say(`Reminder created for ${text}`);
 };
 
@@ -88,7 +89,7 @@ bot.hear(['tip'], (payload, chat) => {
 
 bot.hear(['reminder'], (payload, chat) => {
   chat.conversation((convo) => {
-    convo.ask(question, answer, callbacks, options);
+    convo.ask(question, answer);
   });
 });
 

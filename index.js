@@ -1,6 +1,7 @@
 'use strict';
 const BootBot = require('bootbot');
 const config = require('config');
+var fetch = require("node-fetch");
 
 const bot = new BootBot({
     accessToken: config.get('access_token'),
@@ -17,82 +18,21 @@ bot.hear(['hello', 'hi', 'hey', 'oi'], (payload, chat) => {
     chat.say("Hello again!");
 });
 
-bot.hear(('aryaman'), (payload, chat) => {
-    chat.say("Don't say that name, I cri");
-    chat.say({
+const GIPHY_URL = `http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=`;
+
+
+bot.hear(['cute', 'dog', '(pic)?tures', 'doggo'], (payload, chat) => {
+chat.say('Searching for the perfect gif...');
+  fetch(GIPHY_URL + "Puppies")
+    .then(res => res.json())
+    .then(json => {
+      chat.say({
         attachment: 'image',
-        url : 'https://www.allkpop.com/upload/2018/08/content/nct_1533652276_20180807_nctc2.jpg'
+        url: json.data.image_url
+      }, {
+        typing: true
+      });
     });
 });
-
-bot.hear(("erika"), (payload, chat) => {
-    chat.say("환영 스파이");
-    chat.say("핵폭탄 발사 : 워싱턴 D.C. 120 초");
-});
-
-
-bot.hear(("monbebe"), (payload, chat) => {
-    chat.say("Gaybebe*");
-});
-
-
-bot.hear(("Oliver"), (payload, chat) => {
-    chat.say("Aww-liver");
-});
-
-
-bot.hear(("Lily"), (payload, chat) => {
-    chat.say("<3");
-});
-
-bot.hear(("NCT"), (payload, chat) => {
-    chat.say(
-        ["Choose what their sexual identity is?",
-            '1. Gay',
-            '2. !(!Gay)',
-            '3. Radioactive bisexual alli-gay-tors',
-            '4. North Korean poop sanitizing bacteria',
-        ]
-        
-    );
-    setTimeout(() => {
-        chat.say({
-            text: "Choice?",
-            quickReplies: [
-                '1', '2', '3', '4'
-            ]
-        })
-    }, 2000);
-
-    
-});
-
-bot.hear(("Monsta X"), (payload, chat) => {
-    chat.say(
-        ["Choose what their best couple is?",
-            '1. Shownu x Hyungwon',
-            "2. I.M x Hyungwon in choker porn NSFW don't click",
-            '3. Jooheon x Jooheon in girl clothes',
-            '4. Hyungwon x Starbucks',
-        ]
-        
-    );
-    setTimeout(() => {
-        chat.say({
-            text: "Choice?",
-            quickReplies: [
-                '1', '2', '3', '4'
-            ]
-        })
-    }, 3000);
-
-
-    
-});
-
-bot.hear((["Gay nation", "gay fight", "gay"]), (payload, chat) => {
-    chat.say("hello gay nation! it's ya host sexually radioactive gay coyote here!");
-});
-
 
 bot.start();

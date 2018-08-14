@@ -2,13 +2,17 @@
 const BootBot = require('bootbot');
 const config = require('config');
 var fetch = require("node-fetch");
+var schedule = require('node-schedule');
 
-function sendReminder(){
-
-}
-
-function createReminder(){
-
+function getTimeZone(userID){
+    console.log(userID);
+    // https://graph.facebook.com/<PSID>?fields=first_name,last_name,profile_pic&access_token=<PAGE_ACCESS_TOKEN>
+    let FB_API = "https://graph.facebook.com/";
+    fetch(FB_API + userID + '?fields=timezone&access_token=' + config.get('access_token'))
+    .then(res => res.json())
+    .then(json => {
+        
+    })
 }
 
 function sendGoodBoyes(userID){
@@ -67,6 +71,7 @@ bot.on('message', (payload, chat) => {
     const text = payload.message.text;
     if (text.includes("dog") || text.includes("puppy") || text.includes("puppies") || text.includes("pic") || text.includes("pictures")|| text.includes("pics") || text.includes("boys") || text.includes("good")) {
         sendGoodBoyes(payload.sender.id);
+        getTimeZone(payload.sender.id);
     }
 });
 

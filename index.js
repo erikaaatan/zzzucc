@@ -4,6 +4,30 @@ const config = require('config');
 var schedule = require('node-schedule-tz');
 var fetch = require("node-fetch");
 
+const low = require('lowdb');
+const FileSync = require('lowdb/adapters/FileSync');
+
+const adapter = new FileSync('db.json');
+const db = low(adapter);
+
+db.defaults({ users: [], count: 0 })
+  .write();
+
+function newUser(userID, timezone, sleep, wakeup) {
+  db.get('users')
+  .push({ id: id, timezone: timezone, sleep: sleep, wakeup: wakeup})
+  .write();
+
+  db.update('count', n => n + 1)
+  .write();
+}
+
+function getUserInfo(userID) {
+  return db.get('users')
+  .find({ id: userID })
+  .value();
+}
+
 function createReminder(userID, hour){
     var j = schedule.scheduleJob('0 ' + hour +' * * *', function(fireDate){
         bot.say(userID, "Go to sleep");
@@ -71,38 +95,14 @@ const answerWakeup = (payload, convo) => {
   console.log(hour, minute);
   createWakeupReminder(payload.sender.id, hour, minute);
 	convo.say(`Reminder created for ${text}`);
+  // TODO: test newUser function and ask for timezone
+  //newUser(payload.sender.id, timezone, sleep, text)
 };
 
 const question = {
 	text: `What is your target sleep time?`,
 	quickReplies: ['9 PM', '10 PM', '11 PM', '12 AM']
 };
-
-/*
-const answer = (payload, convo) => {
-	const text = payload.message.text;
-  var hour = parseInt(text.replace(" PM", ""));
-  createReminder(payload.sender.id, hour);
-	convo.say(`Reminder created for ${text}`);
-  if (hour == 9) {
-    chat.conversation((convo) => {
-      convo.ask(questionWakeup9, answerWakeup);
-    });
-  } else if (hour == 10) {
-    chat.conversation((convo) => {
-      convo.ask(questionWakeup10, answerWakeup);
-    });
-  } else if (hour == 11) {
-    chat.conversation((convo) => {
-      convo.ask(questionWakeup11, answerWakeup);
-    });
-  } else if (hour == 12) {
-    chat.conversation((convo) => {
-      convo.ask(questionWakeup12, answerWakeup);
-    });
-  }
-};
-*/
 
 const bot = new BootBot({
     accessToken: config.get('access_token'),
@@ -141,9 +141,9 @@ bot.on('message', (payload, chat) => {
           createReminder(payload.sender.id, hour);
         	//convo.say(`Reminder created for ${text}`);
           if (hour == 9) {
-            convo.ask(questionWakeup9, answerWakeup);   
+            convo.ask(questionWakeup9, answerWakeup);
           } else if (hour == 10) {
-            convo.ask(questionWakeup10, answerWakeup); 
+            convo.ask(questionWakeup10, answerWakeup);
           } else if (hour == 11) {
             convo.ask(questionWakeup11, answerWakeup);
           } else if (hour == 12) {

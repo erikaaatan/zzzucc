@@ -141,6 +141,18 @@ bot.hear(['hello', 'hi', 'hey', 'oi'], (payload, chat) => {
 });
 
 const GIPHY_URL = `http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=`;
+const locationQuestion = {
+  text: "Please share your location so I can find your timezone",
+  quickReplies: [{"content_type":"location"}]
+}
+bot.hear("location", (payload, chat) => {
+  chat.conversation((convo) => {
+    convo.ask(locationQuestion, (payload, convo) => {
+      const coords = payload.coordinates;
+      
+    });
+  });
+});
 
 bot.hear("cycle", (payload, chat) => {
   let reply = sleepCycle();

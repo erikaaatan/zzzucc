@@ -3,6 +3,7 @@ const BootBot = require('bootbot');
 const config = require('config');
 var schedule = require('node-schedule-tz');
 var fetch = require("node-fetch");
+var moment = require('moment');
 
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
@@ -35,8 +36,21 @@ function createReminder(userID, hour){
     console.log("Job created!!");
 }
 
+function sleepCycle(){
+  var currentTime = moment();
+  var firstWake = moment().add(1.75, 'hours');
+  var secondWake = moment().add(3 + 1.75, 'hours');
+  var thirdWake = moment().add(3 + 1.75 + 1.5, 'hours');
+  var fourthWake = moment().add(3 + 1.75 + 1.5 + 1.5, 'hours');
+
+  return {
+    text: "Keeping sleep cycles in mind, you'll want to wake up at these times if you sleep now",
+    quickReplies: [ firstWake.format("h:mm"), secondWake.format("h:mm"), thirdWake.format("h:mm"), fourthWake.format("h:mm") ]
+  };
+}
+
 function createWakeupReminder(userID, hour, minute){
-    var j = schedule.scheduleJob(''+ minute + hour +' * * *', function(fireDate){
+    var j = schedule.scheduleJob(''+ minute + ' ' + hour +' * * *', function(fireDate){
         bot.say(userID, "Wake up");
     });
     console.log("Job created!!");
@@ -104,6 +118,7 @@ const question = {
 	quickReplies: ['9 PM', '10 PM', '11 PM', '12 AM']
 };
 
+
 const bot = new BootBot({
     accessToken: config.get('access_token'),
     verifyToken: config.get('verify_token'),
@@ -126,6 +141,13 @@ bot.hear(['hello', 'hi', 'hey', 'oi'], (payload, chat) => {
 });
 
 const GIPHY_URL = `http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=`;
+
+bot.hear("cycle", (payload, chat) => {
+  let reply = sleepCycle();
+  console.log(reply);
+  chat.conversation((convo) => convo.ask(reply, answerWakeup));
+  // chat.say(reply);
+});
 
 
 bot.on('message', (payload, chat) => {

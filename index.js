@@ -15,7 +15,7 @@ db.defaults({ users: [], count: 0 })
 
 function newUser(userID, timezone, sleep, wakeup) {
   db.get('users')
-  .push({ id: id, timezone: timezone, sleep: sleep, wakeup: wakeup})
+  .push({ id: userID, timezone: timezone, sleep: sleep, wakeup: wakeup})
   .write();
 
   db.update('count', n => n + 1)

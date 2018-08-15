@@ -4,6 +4,7 @@ const config = require('config');
 var schedule = require('node-schedule-tz');
 var fetch = require("node-fetch");
 var moment = require('moment');
+var geoTz = require('geo-tz');
 
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
@@ -49,7 +50,9 @@ function sleepCycle(){
   };
 }
 
-function createWakeupReminder(userID, hour, minute){
+function createWakeupReminder(userID, text){
+  var hour = parseInt(text.substring(0, text.indexOf(":")));
+  var minute = parseInt(text.substring(text.indexOf(":") + 1, text.indexOf(":") + 3));
     var j = schedule.scheduleJob(''+ minute + ' ' + hour +' * * *', function(fireDate){
         bot.say(userID, "Wake up");
     });
@@ -102,17 +105,6 @@ const questionWakeup12 = {
 	quickReplies: ['7:45 AM', '9:15 AM', '10:45 AM']
 };
 
-const answerWakeup = (payload, convo) => {
-  const text = payload.message.text;
-  var hour = parseInt(text.substring(0, text.indexOf(":")));
-  var minute = parseInt(text.substring(text.indexOf(":") + 1, text.indexOf(":") + 3));
-  console.log(hour, minute);
-  createWakeupReminder(payload.sender.id, hour, minute);
-	convo.say(`Reminder created for ${text}`);
-  // TODO: test newUser function and ask for timezone
-  //newUser(payload.sender.id, timezone, sleep, text)
-};
-
 const question = {
 	text: `What is your target sleep time?`,
 	quickReplies: ['9 PM', '10 PM', '11 PM', '12 AM']
@@ -126,19 +118,17 @@ const bot = new BootBot({
 });
 
 bot.setGreetingText("ZZZucc: A Facebook Messenger bot that helps you catch more ZZZs (sends personal reminders for going to sleep on time)");
-bot.setGetStartedButton("Welcome! Features include:\
- \nReminders to go to sleep\nReminders to wake you up at an optimal time, according to your sleep cycle\
- \nTips and tricks for getting a better night's sleep \
- \nFree dog gifs :)");
+bot.setGetStartedButton("Please say hello to start");
 
 bot.on('message', (payload, chat) => {
 	const text = payload.message.text;
 	console.log(`The user said: ${text}`);
 });
 
+/*
 bot.hear(['hello', 'hi', 'hey', 'oi'], (payload, chat) => {
     chat.say("Hello again!");
-});
+});*/
 
 const GIPHY_URL = `http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=`;
 const locationQuestion = {
@@ -149,7 +139,7 @@ bot.hear("location", (payload, chat) => {
   chat.conversation((convo) => {
     convo.ask(locationQuestion, (payload, convo) => {
       const coords = payload.coordinates;
-      
+      var timezone = geoTz(coords.lat, coords.long);
     });
   });
 });
@@ -163,26 +153,51 @@ bot.hear("cycle", (payload, chat) => {
 
 
 bot.on('message', (payload, chat) => {
-    const text = payload.message.text;
+    const text = payload.message.text.toLowerCase();
     if (text.includes("dog") || text.includes("puppy") || text.includes("puppies") || text.includes("pic") || text.includes("pictures")|| text.includes("pics") || text.includes("boys") || text.includes("good")) {
         sendGoodBoyes(payload.sender.id);
     }
-    if (text.includes("reminder")) {
+    if (text.includes("hello")) {
+      var coords = [];
+      var sleep = "";
+      var wakeup = "";
       chat.conversation((convo) => {
-        convo.ask(question, (payload, convo) => {
-        	const text = payload.message.text;
-          var hour = parseInt(text.replace(" PM", ""));
-          createReminder(payload.sender.id, hour);
-        	//convo.say(`Reminder created for ${text}`);
-          if (hour == 9) {
-            convo.ask(questionWakeup9, answerWakeup);
-          } else if (hour == 10) {
-            convo.ask(questionWakeup10, answerWakeup);
-          } else if (hour == 11) {
-            convo.ask(questionWakeup11, answerWakeup);
-          } else if (hour == 12) {
-            convo.ask(questionWakeup12, answerWakeup);
-          }
+        convo.ask(locationQuestion, (payload, convo) => {
+          coords.push(payload.coordinates.lat);
+          coords.push(payload.coordinates.long);
+          var timezone = geoTz(coords[0], coords[1]);
+          convo.ask(question, (payload, convo) => {
+          	sleep = payload.message.text;
+            var hour = parseInt(sleep.replace(" PM", ""));
+            createReminder(payload.sender.id, hour);
+          	//convo.say(`Reminder created for ${text}`);
+            if (hour == 9) {
+              convo.ask(questionWakeup9, (payload, convo) => {
+                wakeup = payload.message.text;
+                createWakeupReminder(payload.sender.id, wakeup);
+              	convo.say(`Reminder created for ${wakeup}`);
+              });
+            } else if (hour == 10) {
+              convo.ask(questionWakeup10, (payload, convo) => {
+                wakeup = payload.message.text;
+                createWakeupReminder(payload.sender.id, wakeup);
+              	convo.say(`Reminder created for ${wakeup}`);
+              });
+            } else if (hour == 11) {
+              convo.ask(questionWakeup11, (payload, convo) => {
+                wakeup = payload.message.text;
+                createWakeupReminder(payload.sender.id, wakeup);
+              	convo.say(`Reminder created for ${wakeup}`);
+              });
+            } else if (hour == 12) {
+              convo.ask(questionWakeup12, (payload, convo) => {
+                wakeup = payload.message.text;
+                createWakeupReminder(payload.sender.id, wakeup);
+              	convo.say(`Reminder created for ${wakeup}`);
+              });
+            }
+            newUser(payload.sender.id, timezone, sleep, wakeup);
+          });
         });
       });
     }

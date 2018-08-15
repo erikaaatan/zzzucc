@@ -44,7 +44,7 @@ var tips = [
   "Try using another pillow tonight!"
 ];
 
-const questionWakeup = {
+const questionWakeup9 = {
   text: `When would you like to receive wake-up reminders?`,
 	quickReplies: ['6:15 AM', '7:45 AM', '9:15 AM']
 };
@@ -65,9 +65,10 @@ const questionWakeup12 = {
 };
 
 const answerWakeup = (payload, convo) => {
-	const text = payload.message.text;
+  const text = payload.message.text;
   var hour = parseInt(text.substring(0, text.indexOf(":")));
   var minute = parseInt(text.substring(text.indexOf(":") + 1, text.indexOf(":") + 3));
+  console.log(hour, minute);
   createWakeupReminder(payload.sender.id, hour, minute);
 	convo.say(`Reminder created for ${text}`);
 };
@@ -138,23 +139,15 @@ bot.on('message', (payload, chat) => {
         	const text = payload.message.text;
           var hour = parseInt(text.replace(" PM", ""));
           createReminder(payload.sender.id, hour);
-        	convo.say(`Reminder created for ${text}`);
+        	//convo.say(`Reminder created for ${text}`);
           if (hour == 9) {
-            chat.conversation((convo) => {
-              convo.ask(questionWakeup9, answerWakeup);
-            });
+            convo.ask(questionWakeup9, answerWakeup);   
           } else if (hour == 10) {
-            chat.conversation((convo) => {
-              convo.ask(questionWakeup10, answerWakeup);
-            });
+            convo.ask(questionWakeup10, answerWakeup); 
           } else if (hour == 11) {
-            chat.conversation((convo) => {
-              convo.ask(questionWakeup11, answerWakeup);
-            });
+            convo.ask(questionWakeup11, answerWakeup);
           } else if (hour == 12) {
-            chat.conversation((convo) => {
-              convo.ask(questionWakeup12, answerWakeup);
-            });
+            convo.ask(questionWakeup12, answerWakeup);
           }
         });
       });

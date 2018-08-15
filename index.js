@@ -3,12 +3,26 @@ const BootBot = require('bootbot');
 const config = require('config');
 var schedule = require('node-schedule-tz');
 var fetch = require("node-fetch");
+var moment = require('moment');
 
 function createReminder(userID, hour){
     var j = schedule.scheduleJob('0 ' + hour +' * * *', function(fireDate){
         bot.say(userID, "Go to sleep");
     });
     console.log("Job created!!");
+}
+
+function sleepCycle(){
+  var currentTime = moment();
+  var firstWake = moment().add(1.75, 'hours');
+  var secondWake = moment().add(3 + 1.75, 'hours');
+  var thirdWake = moment().add(3 + 1.75 + 1.5, 'hours');
+  var fourthWake = moment().add(3 + 1.75 + 1.5 + 1.5, 'hours');
+
+  return {
+    text: "Keeping sleep cycles in mind, you'll want to wake up at these times if you sleep now",
+    quickReplies: [ firstWake.format("h:mm"), secondWake.format("h:mm"), thirdWake.format("h:mm"), fourthWake.format("h:mm") ]
+  };
 }
 
 function createWakeupReminder(userID, hour, minute){
@@ -78,31 +92,6 @@ const question = {
 	quickReplies: ['9 PM', '10 PM', '11 PM', '12 AM']
 };
 
-/*
-const answer = (payload, convo) => {
-	const text = payload.message.text;
-  var hour = parseInt(text.replace(" PM", ""));
-  createReminder(payload.sender.id, hour);
-	convo.say(`Reminder created for ${text}`);
-  if (hour == 9) {
-    chat.conversation((convo) => {
-      convo.ask(questionWakeup9, answerWakeup);
-    });
-  } else if (hour == 10) {
-    chat.conversation((convo) => {
-      convo.ask(questionWakeup10, answerWakeup);
-    });
-  } else if (hour == 11) {
-    chat.conversation((convo) => {
-      convo.ask(questionWakeup11, answerWakeup);
-    });
-  } else if (hour == 12) {
-    chat.conversation((convo) => {
-      convo.ask(questionWakeup12, answerWakeup);
-    });
-  }
-};
-*/
 
 const bot = new BootBot({
     accessToken: config.get('access_token'),
@@ -126,6 +115,13 @@ bot.hear(['hello', 'hi', 'hey', 'oi'], (payload, chat) => {
 });
 
 const GIPHY_URL = `http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=`;
+
+bot.hear("cycle", (payload, chat) => {
+  let reply = sleepCycle();
+  console.log(reply);
+  chat.conversation((convo) => convo.ask(reply, answerWakeup));
+  // chat.say(reply);
+});
 
 
 bot.on('message', (payload, chat) => {

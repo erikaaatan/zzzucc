@@ -5,6 +5,30 @@ var schedule = require('node-schedule-tz');
 var fetch = require("node-fetch");
 var moment = require('moment');
 
+const low = require('lowdb');
+const FileSync = require('lowdb/adapters/FileSync');
+
+const adapter = new FileSync('db.json');
+const db = low(adapter);
+
+db.defaults({ users: [], count: 0 })
+  .write();
+
+function newUser(userID, timezone, sleep, wakeup) {
+  db.get('users')
+  .push({ id: userID, timezone: timezone, sleep: sleep, wakeup: wakeup})
+  .write();
+
+  db.update('count', n => n + 1)
+  .write();
+}
+
+function getUserInfo(userID) {
+  return db.get('users')
+  .find({ id: userID })
+  .value();
+}
+
 function createReminder(userID, hour){
     var j = schedule.scheduleJob('0 ' + hour +' * * *', function(fireDate){
         bot.say(userID, "Go to sleep");
@@ -26,7 +50,7 @@ function sleepCycle(){
 }
 
 function createWakeupReminder(userID, hour, minute){
-    var j = schedule.scheduleJob(''+ minute + hour +' * * *', function(fireDate){
+    var j = schedule.scheduleJob(''+ minute + " " + hour +' * * *', function(fireDate){
         bot.say(userID, "Wake up");
     });
     console.log("Job created!!");
@@ -85,6 +109,8 @@ const answerWakeup = (payload, convo) => {
   console.log(hour, minute);
   createWakeupReminder(payload.sender.id, hour, minute);
 	convo.say(`Reminder created for ${text}`);
+  // TODO: test newUser function and ask for timezone
+  //newUser(payload.sender.id, timezone, sleep, text)
 };
 
 const question = {
@@ -137,9 +163,9 @@ bot.on('message', (payload, chat) => {
           createReminder(payload.sender.id, hour);
         	//convo.say(`Reminder created for ${text}`);
           if (hour == 9) {
-            convo.ask(questionWakeup9, answerWakeup);   
+            convo.ask(questionWakeup9, answerWakeup);
           } else if (hour == 10) {
-            convo.ask(questionWakeup10, answerWakeup); 
+            convo.ask(questionWakeup10, answerWakeup);
           } else if (hour == 11) {
             convo.ask(questionWakeup11, answerWakeup);
           } else if (hour == 12) {

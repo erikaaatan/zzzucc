@@ -50,7 +50,7 @@ function sleepCycle(){
 }
 
 function createWakeupReminder(userID, hour, minute){
-    var j = schedule.scheduleJob(''+ minute + " " + hour +' * * *', function(fireDate){
+    var j = schedule.scheduleJob(''+ minute + ' ' + hour +' * * *', function(fireDate){
         bot.say(userID, "Wake up");
     });
     console.log("Job created!!");

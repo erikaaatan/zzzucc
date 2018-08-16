@@ -3,7 +3,7 @@ const BootBot = require('bootbot');
 const config = require('config');
 var schedule = require('node-schedule-tz');
 var fetch = require("node-fetch");
-var moment = require('moment');
+var moment = require('moment-timezone');
 var geoTz = require('geo-tz');
 
 const low = require('lowdb');
@@ -15,6 +15,8 @@ const db = low(adapter);
 db.defaults({ users: [], count: 0 })
   .write();
 
+var timezone = '';
+
 function newUser(userID, timezone, sleep, wakeup) {
   let user = db.get('users').find({ id: userID }).value();
 
@@ -24,6 +26,11 @@ function newUser(userID, timezone, sleep, wakeup) {
     .write();
 
     db.update('count', n => n + 1)
+    .write();
+  } else {
+    db.get('users')
+    .find({id: userID})
+    .assign({ id: userID, timezone: timezone, sleep: sleep, wakeup: wakeup})
     .write();
   }
 }
@@ -35,18 +42,26 @@ function getUserInfo(userID) {
 }
 
 function createReminder(userID, hour){
-    var j = schedule.scheduleJob('0 ' + hour +' * * *', function(fireDate){
-        bot.say(userID, "Go to sleep");
-    });
-    console.log("Job created!!");
+  let tz = '';
+  try { 
+    tz = getUserInfo(userID).timezone;
+   }
+  catch(err) { 
+    tz = timezone;
+  }
+  var j = schedule.scheduleJob('0 ' + hour +' * * *', tz, function(fireDate){
+    bot.say(userID, "Go to sleep");
+  });
+  console.log("Job created!!");
 }
 
-function sleepCycle(){
-  var currentTime = moment();
-  var firstWake = moment().add(1.75, 'hours');
-  var secondWake = moment().add(3 + 1.75, 'hours');
-  var thirdWake = moment().add(3 + 1.75 + 1.5, 'hours');
-  var fourthWake = moment().add(3 + 1.75 + 1.5 + 1.5, 'hours');
+function sleepCycle(userID){
+  let timez = getUserInfo(userID).timezone;
+  var currentTime = moment.tz(timez);
+  var firstWake = moment.tz(timez).add(1.75, 'hours');
+  var secondWake = moment.tz(timez).add(3 + 1.75, 'hours');
+  var thirdWake = moment.tz(timez).add(3 + 1.75 + 1.5, 'hours');
+  var fourthWake = moment.tz(timez).add(3 + 1.75 + 1.5 + 1.5, 'hours');
 
   return {
     text: "Keeping sleep cycles in mind, you'll want to wake up at these times if you sleep now",
@@ -148,13 +163,13 @@ bot.hear("location", (payload, chat) => {
     convo.ask(locationQuestion, (payload, convo) => {
       const coords = payload.coordinates;
       console.log(coords);
-      var timezone = geoTz(coords.lat, coords.long);
+      timezone = geoTz(coords.lat, coords.long);
     });
   });
 });
 
 bot.hear("cycle", (payload, chat) => {
-  let reply = sleepCycle();
+  let reply = sleepCycle(payload.sender.id);
   console.log(reply);
   chat.conversation((convo) => convo.ask(reply, (payload, convo) => {
     let wakeup = payload.message.text;

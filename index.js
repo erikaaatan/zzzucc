@@ -167,10 +167,10 @@ bot.hear("cycle", (payload, chat) => {
 
 bot.on('message', (payload, chat) => {
     const text = payload.message.text.toLowerCase();
-    if (text.includes("dog") || text.includes("puppy") || text.includes("puppies") || text.includes("pic") || text.includes("pictures")|| text.includes("pics") || text.includes("boys") || text.includes("good")) {
+    if (text.includes("dog") || text.includes("puppy") || text.includes("puppies") || text.includes("pic") || text.includes("gif") || text.includes("boys") || text.includes("good")) {
         sendGoodBoyes(payload.sender.id);
     }
-    if (text.includes("hello")) {
+    if (text.includes("hello") || text.includes("hi") || text.includes("hey") || text.includes("hola") || text.includes("oi")) {
       var coords = [];
       var sleep = "";
       var wakeup = "";
@@ -221,7 +221,7 @@ bot.on('message', (payload, chat) => {
         });
       });
     }
-    if (text.includes("tip")) {
+    if (text.includes("tip") || text.includes("trick") || text.includes("advice") || text.includes("help") || text.includes("guidance")) {
       chat.say(tips[Math.floor(Math.random()*tips.length)]);
     }
 });

@@ -25,6 +25,11 @@ function newUser(userID, timezone, sleep, wakeup) {
 
     db.update('count', n => n + 1)
     .write();
+  } else {
+    db.get('users')
+    .find({id: userID})
+    .assign({ id: userID, timezone: timezone, sleep: sleep, wakeup: wakeup})
+    .write();
   }
 }
 

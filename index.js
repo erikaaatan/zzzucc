@@ -118,8 +118,9 @@ const bot = new BootBot({
 });
 
 bot.setGreetingText("ZZZucc: A Facebook Messenger bot that helps you catch more ZZZs (sends personal reminders for going to sleep on time)");
-bot.setGetStartedButton("Please say hello to start");
-
+bot.setGetStartedButton((payload, chat) => {
+  chat.say('Please send a hello to get started!');
+});
 bot.on('message', (payload, chat) => {
 	const text = payload.message.text;
 	console.log(`The user said: ${text}`);
@@ -139,6 +140,7 @@ bot.hear("location", (payload, chat) => {
   chat.conversation((convo) => {
     convo.ask(locationQuestion, (payload, convo) => {
       const coords = payload.coordinates;
+      console.log(coords);
       var timezone = geoTz(coords.lat, coords.long);
     });
   });
@@ -147,7 +149,11 @@ bot.hear("location", (payload, chat) => {
 bot.hear("cycle", (payload, chat) => {
   let reply = sleepCycle();
   console.log(reply);
-  chat.conversation((convo) => convo.ask(reply, answerWakeup));
+  chat.conversation((convo) => convo.ask(reply, (payload, convo) => {
+    let wakeup = payload.message.text;
+    createWakeupReminder(payload.sender.id, wakeup);
+    convo.say(`Reminder created for ${wakeup}`);
+  }));
   // chat.say(reply);
 });
 
@@ -163,9 +169,11 @@ bot.on('message', (payload, chat) => {
       var wakeup = "";
       chat.conversation((convo) => {
         convo.ask(locationQuestion, (payload, convo) => {
-          coords.push(payload.coordinates.lat);
-          coords.push(payload.coordinates.long);
+          let coordinates = payload.message.attachments[0].payload.coordinates;
+          coords.push(coordinates.lat);
+          coords.push(coordinates.long);
           var timezone = geoTz(coords[0], coords[1]);
+        
           convo.ask(question, (payload, convo) => {
           	sleep = payload.message.text;
             var hour = parseInt(sleep.replace(" PM", ""));
@@ -175,28 +183,33 @@ bot.on('message', (payload, chat) => {
               convo.ask(questionWakeup9, (payload, convo) => {
                 wakeup = payload.message.text;
                 createWakeupReminder(payload.sender.id, wakeup);
-              	convo.say(`Reminder created for ${wakeup}`);
+                convo.say(`Reminder created for ${wakeup}`);
+                newUser(payload.sender.id, timezone, sleep, wakeup);
               });
             } else if (hour == 10) {
               convo.ask(questionWakeup10, (payload, convo) => {
                 wakeup = payload.message.text;
                 createWakeupReminder(payload.sender.id, wakeup);
-              	convo.say(`Reminder created for ${wakeup}`);
+                convo.say(`Reminder created for ${wakeup}`);
+                newUser(payload.sender.id, timezone, sleep, wakeup);
               });
             } else if (hour == 11) {
               convo.ask(questionWakeup11, (payload, convo) => {
                 wakeup = payload.message.text;
                 createWakeupReminder(payload.sender.id, wakeup);
-              	convo.say(`Reminder created for ${wakeup}`);
+                convo.say(`Reminder created for ${wakeup}`);
+                newUser(payload.sender.id, timezone, sleep, wakeup);
               });
             } else if (hour == 12) {
               convo.ask(questionWakeup12, (payload, convo) => {
                 wakeup = payload.message.text;
                 createWakeupReminder(payload.sender.id, wakeup);
-              	convo.say(`Reminder created for ${wakeup}`);
+                convo.say(`Reminder created for ${wakeup}`);
+                newUser(payload.sender.id, timezone, sleep, wakeup);
               });
             }
-            newUser(payload.sender.id, timezone, sleep, wakeup);
+            console.log(wakeup);
+            
           });
         });
       });

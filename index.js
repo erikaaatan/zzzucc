@@ -126,7 +126,8 @@ bot.setGetStartedButton((payload, chat) => {
   chat.say("This is ZZZucc, your personal reminder bot for going to sleep on time. Features include:\
    \nReminders to go to sleep\nA system of spam alerts to wake you up at an optimal time, according to your sleep cycle\
    \nTips and tricks for getting a better night's sleep");
-  chat.say('Please send a hello to get started!');
+   setTimeout(() => chat.say('Please send a hello to get started!'), 2000);
+  
 });
 bot.on('message', (payload, chat) => {
 	const text = payload.message.text;

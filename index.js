@@ -79,10 +79,7 @@ function sleepCycle(userID) {
 }
 
 function createWakeupReminder(userID, text) {
-  var hour = parseInt(text.substring(0, text.indexOf(":")));
-  var minute = parseInt(
-    text.substring(text.indexOf(":") + 1, text.indexOf(":") + 3)
-  );
+  var time = moment(text, 'HH:mm a')
   var j = schedule.scheduleJob("" + minute + " " + hour + " * * *", function(
     fireDate
   ) {

@@ -124,10 +124,9 @@ const bot = new BootBot({
 bot.setGreetingText("ZZZucc: A Facebook Messenger bot that helps you catch more ZZZs (sends personal reminders for going to sleep on time)");
 bot.setGetStartedButton((payload, chat) => {
   chat.say("This is ZZZucc, your personal reminder bot for going to sleep on time. Features include:\
-   \nReminders to go to sleep\nA system of spam alerts to wake you up at an optimal time, according to your sleep cycle\
-   \nTips and tricks for getting a better night's sleep");
-   setTimeout(() => chat.say('Please send a hello to get started!'), 2000);
-  
+      \nReminders to go to sleep\nA system of spam alerts to wake you up at an optimal time, according to your sleep cycle (type \"cycle\")\
+      \nTips and tricks for getting a better night's sleep (type \"tip\")\nFree dog gifs ^_^ (type \"dog\")");
+  setTimeout(() => chat.say('Please send a hello to get started!'), 2000);
 });
 bot.on('message', (payload, chat) => {
 	const text = payload.message.text;

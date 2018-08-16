@@ -43,19 +43,6 @@ function getUserInfo(userID) {
     .value();
 }
 
-function createReminder(userID, hour, min) {
-  let tz = "";
-  try {
-    tz = getUserInfo(userID).timezone;
-  } catch (err) {
-    tz = timezone;
-  }
-  var j = schedule.scheduleJob("" + min + " " + hour + " * * *", tz, function(fireDate) {
-    bot.say(userID, "Go to sleep");
-  });
-  console.log("Job created!!");
-}
-
 function sleepCycle(userID) {
   let timez = getUserInfo(userID).timezone;
   var currentTime = moment.tz(timez);
@@ -68,23 +55,24 @@ function sleepCycle(userID) {
     text:
       "Keeping sleep cycles in mind, you'll want to wake up at these times if you sleep now",
     quickReplies: [
-      firstWake.format("h:mm"),
-      secondWake.format("h:mm"),
-      thirdWake.format("h:mm"),
-      fourthWake.format("h:mm")
+      firstWake.format("h:mm A"),
+      secondWake.format("h:mm A"),
+      thirdWake.format("h:mm A"),
+      fourthWake.format("h:mm A")
     ]
   };
 }
 
-function createWakeupReminder(userID, text) {
-  var hour = parseInt(text.substring(0, text.indexOf(":")));
-  var minute = parseInt(
-    text.substring(text.indexOf(":") + 1, text.indexOf(":") + 3)
-  );
-  var j = schedule.scheduleJob("" + minute + " " + hour + " * * *", function(
+function createWakeupReminder(userID, text){
+  createReminder(userID, text, "Wake Up!");
+}
+
+function createReminder(userID, text, msg) {
+  var time = moment(text, 'HH:mm a')
+  var j = schedule.scheduleJob("" + time.format('mm') + " " + time.format('HH') + " * * *", function(
     fireDate
   ) {
-    bot.say(userID, "Wake up");
+    bot.say(userID, msg);
   });
   console.log("Job created!!");
 }
@@ -139,7 +127,7 @@ const questionWakeup12 = {
 
 const question = {
   text: `What is your target sleep time?`,
-  quickReplies: ["9 PM", "10 PM", "11 PM", "12 AM"]
+  quickReplies: ["9:00 PM", "10:00 PM", "11:00 PM", "12:00 AM"]
 };
 
 const bot = new BootBot({
@@ -216,7 +204,7 @@ bot.on("message", (payload, chat) => {
     text.includes("hi") ||
     text.includes("hey") ||
     text.includes("oi") ||
-    text.includes("hola") ||
+    text.includes("hola") 
   ) {
     var coords = [];
     var sleep = "";
@@ -227,49 +215,55 @@ bot.on("message", (payload, chat) => {
         coords.push(coordinates.lat);
         coords.push(coordinates.long);
         var timezone = geoTz(coords[0], coords[1]);
-          convo.ask(question, (payload, convo) => {
-          	sleep = payload.message.text;
-            var hour = parseInt(sleep.replace(" PM", ""));
-            createReminder(payload.sender.id, hour);
-          	//convo.say(`Reminder created for ${text}`);
-            if (hour == 9) {
-              convo.ask(questionWakeup9, (payload, convo) => {
-                wakeup = payload.message.text;
-                createWakeupReminder(payload.sender.id, wakeup);
-                convo.say(`Reminder created for ${wakeup}`);
-                newUser(payload.sender.id, timezone, sleep, wakeup);
-              });
-            } else if (hour == 10) {
-              convo.ask(questionWakeup10, (payload, convo) => {
-                wakeup = payload.message.text;
-                createWakeupReminder(payload.sender.id, wakeup);
-                convo.say(`Reminder created for ${wakeup}`);
-                newUser(payload.sender.id, timezone, sleep, wakeup);
-              });
-            } else if (hour == 11) {
-              convo.ask(questionWakeup11, (payload, convo) => {
-                wakeup = payload.message.text;
-                createWakeupReminder(payload.sender.id, wakeup);
-                convo.say(`Reminder created for ${wakeup}`);
-                newUser(payload.sender.id, timezone, sleep, wakeup);
-              });
-            } else if (hour == 12) {
-              convo.ask(questionWakeup12, (payload, convo) => {
-                wakeup = payload.message.text;
-                createWakeupReminder(payload.sender.id, wakeup);
-                convo.say(`Reminder created for ${wakeup}`);
-                newUser(payload.sender.id, timezone, sleep, wakeup);
-              });
-            }
-            console.log(wakeup);
-
-          });
+        convo.ask(question, (payload, convo) => {
+          sleep = payload.message.text;
+          //var hour = parseInt(sleep.replace(" PM", ""));
+          var hour = moment(sleep, 'HH:mm a').format('HH');
+          createReminder(payload.sender.id, payload.message.text, "Go to Sleep!");
+          //convo.say(`Reminder created for ${text}`);
+          if (hour == "21") {
+            convo.ask(questionWakeup9, (payload, convo) => {
+              wakeup = payload.message.text;
+              createWakeupReminder(payload.sender.id, wakeup);
+              convo.say(`Reminder created for ${wakeup}`);
+              newUser(payload.sender.id, timezone, sleep, wakeup);
+            });
+          } else if (hour == "22") {
+            convo.ask(questionWakeup10, (payload, convo) => {
+              wakeup = payload.message.text;
+              createWakeupReminder(payload.sender.id, wakeup);
+              convo.say(`Reminder created for ${wakeup}`);
+              newUser(payload.sender.id, timezone, sleep, wakeup);
+            });
+          } else if (hour == "23") {
+            convo.ask(questionWakeup11, (payload, convo) => {
+              wakeup = payload.message.text;
+              createWakeupReminder(payload.sender.id, wakeup);
+              convo.say(`Reminder created for ${wakeup}`);
+              newUser(payload.sender.id, timezone, sleep, wakeup);
+            });
+          } else if (hour == "00") {
+            convo.ask(questionWakeup12, (payload, convo) => {
+              wakeup = payload.message.text;
+              createWakeupReminder(payload.sender.id, wakeup);
+              convo.say(`Reminder created for ${wakeup}`);
+              newUser(payload.sender.id, timezone, sleep, wakeup);
+            });
+          }
+          console.log(wakeup);
         });
       });
-    }
-    if (text.includes("tip") || text.includes("trick") || text.includes("advice") || text.includes("help") || text.includes("guidance")) {
-      chat.say(tips[Math.floor(Math.random()*tips.length)]);
-    }
+    });
+  }
+  if (
+    text.includes("tip") ||
+    text.includes("trick") ||
+    text.includes("advice") ||
+    text.includes("help") ||
+    text.includes("guidance")
+  ) {
+    chat.say(tips[Math.floor(Math.random() * tips.length)]);
+  }
 });
 
 bot.start();

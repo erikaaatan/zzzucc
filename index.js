@@ -16,12 +16,16 @@ db.defaults({ users: [], count: 0 })
   .write();
 
 function newUser(userID, timezone, sleep, wakeup) {
-  db.get('users')
-  .push({ id: userID, timezone: timezone, sleep: sleep, wakeup: wakeup})
-  .write();
+  let user = db.get('users').find({ id: userID }).value();
 
-  db.update('count', n => n + 1)
-  .write();
+  if (user == null) {
+    db.get('users')
+    .push({ id: userID, timezone: timezone, sleep: sleep, wakeup: wakeup})
+    .write();
+
+    db.update('count', n => n + 1)
+    .write();
+  }
 }
 
 function getUserInfo(userID) {
@@ -173,7 +177,7 @@ bot.on('message', (payload, chat) => {
           coords.push(coordinates.lat);
           coords.push(coordinates.long);
           var timezone = geoTz(coords[0], coords[1]);
-        
+
           convo.ask(question, (payload, convo) => {
           	sleep = payload.message.text;
             var hour = parseInt(sleep.replace(" PM", ""));
@@ -209,7 +213,7 @@ bot.on('message', (payload, chat) => {
               });
             }
             console.log(wakeup);
-            
+
           });
         });
       });

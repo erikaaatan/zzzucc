@@ -210,7 +210,13 @@ bot.on("message", (payload, chat) => {
   ) {
     sendGoodBoyes(payload.sender.id);
   }
-  if (text.includes("hello")) {
+  if (
+    text.includes("hello") ||
+    text.includes("hi") ||
+    text.includes("hey") ||
+    text.includes("oi") ||
+    text.includes("hola") ||
+  ) {
     var coords = [];
     var sleep = "";
     var wakeup = "";
